@@ -45,3 +45,6 @@ sysinfo.xml
 # OS
 .DS_Store
 Thumbs.db
+
+# Signing
+keystore/

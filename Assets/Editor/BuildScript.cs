@@ -1,3 +1,4 @@
+using System.IO;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEditor.SceneManagement;
@@ -8,6 +9,9 @@ public static class BuildScript
 {
     const string ScenePath = "Assets/Scenes/Main.unity";
     const string ApkPath = "Builds/Stack.apk";
+
+    static readonly string KeystorePath = "keystore/stack-release.keystore";
+    static readonly string KeystorePassFile = "keystore/keystore-pass.txt";
 
     public static void BuildAndroid()
     {
@@ -23,7 +27,8 @@ public static class BuildScript
         PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel25;
         PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevel35;
         PlayerSettings.Android.forceSDCardPermission = false;
-        PlayerSettings.Android.useCustomKeystore = false;
+
+        ConfigureSigning();
 
         PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[]
         {
@@ -61,6 +66,26 @@ public static class BuildScript
         var report = BuildPipeline.BuildPlayer(options);
         if (report.summary.result != BuildResult.Succeeded)
             throw new System.Exception("Build failed: " + report.summary.result + " errors=" + report.summary.totalErrors);
+    }
+
+    static void ConfigureSigning()
+    {
+        string pass = null;
+        if (File.Exists(KeystorePassFile))
+            pass = File.ReadAllText(KeystorePassFile).Trim();
+        if (string.IsNullOrEmpty(pass))
+            pass = System.Environment.GetEnvironmentVariable("STACK_KEYSTORE_PASS");
+        if (string.IsNullOrEmpty(pass))
+        {
+            UnityEngine.Debug.LogWarning("No keystore password found; signing with default key.");
+            PlayerSettings.Android.useCustomKeystore = false;
+            return;
+        }
+        PlayerSettings.Android.useCustomKeystore = true;
+        PlayerSettings.Android.keystoreName = KeystorePath;
+        PlayerSettings.Android.keystorePass = pass;
+        PlayerSettings.Android.keyaliasName = "stack";
+        PlayerSettings.Android.keyaliasPass = pass;
     }
 
     static void CreateScene()
