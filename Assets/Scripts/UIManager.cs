@@ -20,8 +20,13 @@ public class UIManager : MonoBehaviour
     GameObject startMenuPanel;
     Button playButton;
     Text menuBestText;
-    Text musicLabel;
-    Button musicButton;
+
+    Button menuMusicButton;
+    GameObject menuMusicOn;
+    GameObject menuMusicOff;
+    Button fieldMusicButton;
+    GameObject fieldMusicOn;
+    GameObject fieldMusicOff;
 
     GameObject pauseButton;
     GameObject pausePanel;
@@ -66,8 +71,10 @@ public class UIManager : MonoBehaviour
 
         BuildStartMenu();
         BuildPauseButton();
+        BuildFieldMusicButton();
         BuildPausePanel();
         BuildGameOverPanel();
+        RefreshMusicIcon();
     }
 
     void BuildStartMenu()
@@ -87,10 +94,8 @@ public class UIManager : MonoBehaviour
 
         menuBestText = MakeTextIn(bg.transform, "MenuBest", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -110f), 22, new Color(1f, 1f, 1f, 0.65f), TextAnchor.MiddleCenter);
 
-        musicButton = MakeButton(bg.transform, "MusicBtn", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-36f, -56f), new Vector2(150f, 42f), new Color(0.27f, 0.3f, 0.34f, 0.85f), "МУЗЫКА: ВКЛ", 16, Color.white);
-        musicLabel = musicButton.GetComponentInChildren<Text>();
-        musicButton.onClick.AddListener(ToggleMusic);
-        RefreshMusicLabel();
+        menuMusicButton = MakeMusicIconButton(bg.transform, "MusicBtn", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-36f, -56f), out menuMusicOn, out menuMusicOff);
+        menuMusicButton.onClick.AddListener(ToggleMusic);
     }
 
     void BuildPauseButton()
@@ -122,6 +127,13 @@ public class UIManager : MonoBehaviour
         txtRt.offsetMin = Vector2.zero;
         txtRt.offsetMax = Vector2.zero;
         pauseButton.SetActive(false);
+    }
+
+    void BuildFieldMusicButton()
+    {
+        fieldMusicButton = MakeMusicIconButton(canvasTransform, "MusicFieldBtn", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-36f, -50f), out fieldMusicOn, out fieldMusicOff);
+        fieldMusicButton.onClick.AddListener(ToggleMusic);
+        fieldMusicButton.gameObject.SetActive(false);
     }
 
     void BuildPausePanel()
@@ -174,19 +186,30 @@ public class UIManager : MonoBehaviour
         bestText.gameObject.SetActive(true);
     }
 
-    public void ShowPauseButton() { pauseButton.SetActive(true); }
-    public void HidePauseButton() { pauseButton.SetActive(false); }
+    public void ShowPauseButton()
+    {
+        pauseButton.SetActive(true);
+        if (fieldMusicButton != null) fieldMusicButton.gameObject.SetActive(true);
+    }
+
+    public void HidePauseButton()
+    {
+        pauseButton.SetActive(false);
+        if (fieldMusicButton != null) fieldMusicButton.gameObject.SetActive(false);
+    }
 
     public void ShowPause()
     {
         pausePanel.SetActive(true);
         pauseButton.SetActive(false);
+        if (fieldMusicButton != null) fieldMusicButton.gameObject.SetActive(false);
     }
 
     public void HidePause()
     {
         pausePanel.SetActive(false);
         pauseButton.SetActive(true);
+        if (fieldMusicButton != null) fieldMusicButton.gameObject.SetActive(true);
     }
 
     public void WirePlayButtons(UnityEngine.Events.UnityAction onPlay, UnityEngine.Events.UnityAction onResume, UnityEngine.Events.UnityAction onRestartPause, UnityEngine.Events.UnityAction onMenuPause, UnityEngine.Events.UnityAction onRestartOver, UnityEngine.Events.UnityAction onMenuOver, UnityEngine.Events.UnityAction onPause)
@@ -306,14 +329,69 @@ public class UIManager : MonoBehaviour
     {
         if (sfx == null) return;
         sfx.SetMusicOn(!sfx.IsMusicOn);
-        RefreshMusicLabel();
+        RefreshMusicIcon();
     }
 
-    void RefreshMusicLabel()
+    void RefreshMusicIcon()
     {
-        if (musicLabel == null) return;
-        musicLabel.text = (sfx != null && sfx.IsMusicOn) ? "МУЗЫКА: ВКЛ" : "МУЗЫКА: ВЫКЛ";
-        musicLabel.color = (sfx != null && sfx.IsMusicOn) ? Color.white : new Color(0.75f, 0.75f, 0.75f, 0.6f);
+        bool on = sfx != null && sfx.IsMusicOn;
+        if (menuMusicOn != null) menuMusicOn.SetActive(on);
+        if (menuMusicOff != null) menuMusicOff.SetActive(!on);
+        if (fieldMusicOn != null) fieldMusicOn.SetActive(on);
+        if (fieldMusicOff != null) fieldMusicOff.SetActive(!on);
+    }
+
+    Button MakeMusicIconButton(Transform parent, string name, Vector2 aMin, Vector2 aMax, Vector2 pos, out GameObject onIcon, out GameObject offIcon)
+    {
+        var go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+        var img = go.AddComponent<Image>();
+        img.color = new Color(0.27f, 0.3f, 0.34f, 0.85f);
+        var btn = go.AddComponent<Button>();
+        btn.targetGraphic = img;
+        var rt = go.GetComponent<RectTransform>();
+        rt.anchorMin = aMin;
+        rt.anchorMax = aMax;
+        rt.sizeDelta = new Vector2(44f, 44f);
+        rt.anchoredPosition = pos;
+
+        onIcon = new GameObject("On");
+        onIcon.transform.SetParent(go.transform, false);
+        Stretch(onIcon.GetComponent<RectTransform>());
+        BuildNoteIcon(onIcon.transform);
+
+        offIcon = new GameObject("Off");
+        offIcon.transform.SetParent(go.transform, false);
+        Stretch(offIcon.GetComponent<RectTransform>());
+        BuildNoteIcon(offIcon.transform);
+        AddBar(offIcon.transform, Vector2.zero, new Vector2(4f, 40f), 45f, new Color(1f, 0.35f, 0.35f, 1f));
+        return btn;
+    }
+
+    void BuildNoteIcon(Transform parent)
+    {
+        var white = new Color(1f, 1f, 1f, 0.92f);
+        AddBar(parent, new Vector2(-3f, -7f), new Vector2(10f, 6f), 25f, white);
+        AddBar(parent, new Vector2(9f, -7f), new Vector2(10f, 6f), 25f, white);
+        AddBar(parent, new Vector2(1f, 1f), new Vector2(3.5f, 20f), 0f, white);
+        AddBar(parent, new Vector2(13f, 1f), new Vector2(3.5f, 20f), 0f, white);
+        AddBar(parent, new Vector2(7f, 10f), new Vector2(15f, 5f), 0f, white);
+    }
+
+    static GameObject AddBar(Transform parent, Vector2 pos, Vector2 size, float rot, Color c)
+    {
+        var go = new GameObject("Bar");
+        go.transform.SetParent(parent, false);
+        var img = go.AddComponent<Image>();
+        img.color = c;
+        img.raycastTarget = false;
+        var rt = go.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0.5f, 0.5f);
+        rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta = size;
+        rt.anchoredPosition = pos;
+        if (rot != 0f) rt.localRotation = Quaternion.Euler(0f, 0f, rot);
+        return go;
     }
 
     static void Stretch(RectTransform rt)
