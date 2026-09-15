@@ -119,7 +119,7 @@ public class GameRunner : MonoBehaviour
         ResetGame();
         state = GameState.Menu;
         ui.ShowMenu();
-        sfx.SetMusic(true);
+        sfx.SetMusic(false);
     }
 
     void SpawnMover()

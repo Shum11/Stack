@@ -15,10 +15,13 @@ public class UIManager : MonoBehaviour
 
     Canvas canvas;
     Transform canvasTransform;
+    SoundManager sfx;
 
     GameObject startMenuPanel;
     Button playButton;
     Text menuBestText;
+    Text musicLabel;
+    Button musicButton;
 
     GameObject pauseButton;
     GameObject pausePanel;
@@ -29,8 +32,9 @@ public class UIManager : MonoBehaviour
     Button restartFromGameOverButton;
     Button menuFromGameOverButton;
 
-    public void Build()
+    public void Build(SoundManager sound)
     {
+        sfx = sound;
         var canvasGo = new GameObject("UICanvas");
         canvasGo.transform.SetParent(transform, false);
         canvas = canvasGo.AddComponent<Canvas>();
@@ -82,6 +86,11 @@ public class UIManager : MonoBehaviour
         playButton = MakeButton(bg.transform, "PlayBtn", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -30f), new Vector2(200f, 55f), new Color(0.18f, 0.72f, 0.42f), "ИГРАТЬ", 30, Color.white);
 
         menuBestText = MakeTextIn(bg.transform, "MenuBest", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -110f), 22, new Color(1f, 1f, 1f, 0.65f), TextAnchor.MiddleCenter);
+
+        musicButton = MakeButton(bg.transform, "MusicBtn", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-36f, -56f), new Vector2(150f, 42f), new Color(0.27f, 0.3f, 0.34f, 0.85f), "МУЗЫКА: ВКЛ", 16, Color.white);
+        musicLabel = musicButton.GetComponentInChildren<Text>();
+        musicButton.onClick.AddListener(ToggleMusic);
+        RefreshMusicLabel();
     }
 
     void BuildPauseButton()
@@ -291,6 +300,20 @@ public class UIManager : MonoBehaviour
         txtRt.offsetMax = Vector2.zero;
         txt.text = label;
         return btn;
+    }
+
+    void ToggleMusic()
+    {
+        if (sfx == null) return;
+        sfx.SetMusicOn(!sfx.IsMusicOn);
+        RefreshMusicLabel();
+    }
+
+    void RefreshMusicLabel()
+    {
+        if (musicLabel == null) return;
+        musicLabel.text = (sfx != null && sfx.IsMusicOn) ? "МУЗЫКА: ВКЛ" : "МУЗЫКА: ВЫКЛ";
+        musicLabel.color = (sfx != null && sfx.IsMusicOn) ? Color.white : new Color(0.75f, 0.75f, 0.75f, 0.6f);
     }
 
     static void Stretch(RectTransform rt)

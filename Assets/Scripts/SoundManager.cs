@@ -9,6 +9,12 @@ public class SoundManager : MonoBehaviour
     AudioClip overClip;
     AudioClip bgClip;
 
+    bool musicOn = true;
+    bool musicIntended;
+    bool musicReady;
+
+    public bool IsMusicOn { get { return musicOn; } }
+
     public void Build()
     {
         src = gameObject.AddComponent<AudioSource>();
@@ -22,15 +28,37 @@ public class SoundManager : MonoBehaviour
         music = gameObject.AddComponent<AudioSource>();
         music.clip = bgClip;
         music.loop = true;
-        music.volume = 0.45f;
-        music.Play();
+        music.volume = 0.3f;
+        musicOn = PlayerPrefs.GetInt("StackMusic", 1) == 1;
+        musicReady = true;
+        ApplyMusic();
     }
 
-    public void SetMusic(bool on)
+    public void SetMusicOn(bool on)
     {
-        if (music == null) return;
-        if (on && !music.isPlaying) music.Play();
-        if (!on && music.isPlaying) music.Pause();
+        musicOn = on;
+        PlayerPrefs.SetInt("StackMusic", on ? 1 : 0);
+        PlayerPrefs.Save();
+        ApplyMusic();
+    }
+
+    public void SetMusic(bool intended)
+    {
+        musicIntended = intended;
+        ApplyMusic();
+    }
+
+    void ApplyMusic()
+    {
+        if (!musicReady || music == null) return;
+        if (musicOn && musicIntended)
+        {
+            if (!music.isPlaying) music.Play();
+        }
+        else if (music.isPlaying)
+        {
+            music.Pause();
+        }
     }
 
     public void PlayPlace()

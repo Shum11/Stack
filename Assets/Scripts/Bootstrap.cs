@@ -25,7 +25,7 @@ public class Bootstrap : MonoBehaviour
 
         var uiGo = new GameObject("UI");
         var ui = uiGo.AddComponent<UIManager>();
-        ui.Build();
+        ui.Build(sfx);
 
         var runnerGo = new GameObject("GameRunner");
         var runner = runnerGo.AddComponent<GameRunner>();
