@@ -8,7 +8,7 @@ public class GameRunner : MonoBehaviour
     const float BlockSize = 1f;
     const float BaseSize = 3f;
     const float CameraDistance = 15f;
-    const float CameraSmoothTime = 0.7f;
+    const float CameraSmoothTime = 0.2f;
     const float MoveSpeedBase = 2.6f;
 
     enum GameState { Menu, Playing, Paused, GameOver }
@@ -50,6 +50,7 @@ public class GameRunner : MonoBehaviour
 
     void ResetGame()
     {
+        camVel = Vector3.zero;
         foreach (Transform child in stackRoot) Destroy(child.gameObject);
         stack.Clear();
         score = 0;
@@ -70,6 +71,7 @@ public class GameRunner : MonoBehaviour
         ui.HideMenu();
         ui.ShowPauseButton();
         state = GameState.Playing;
+        sfx.SetMusic(true);
     }
 
     public void Pause()
@@ -78,6 +80,7 @@ public class GameRunner : MonoBehaviour
         state = GameState.Paused;
         ui.HidePauseButton();
         ui.ShowPause();
+        sfx.SetMusic(false);
     }
 
     public void Resume()
@@ -86,6 +89,7 @@ public class GameRunner : MonoBehaviour
         state = GameState.Playing;
         ui.HidePause();
         ui.ShowPauseButton();
+        sfx.SetMusic(true);
     }
 
     public void RestartFromPause()
@@ -95,6 +99,7 @@ public class GameRunner : MonoBehaviour
         ResetGame();
         state = GameState.Playing;
         ui.ShowPauseButton();
+        sfx.SetMusic(true);
     }
 
     public void RestartFromGameOver()
@@ -103,6 +108,7 @@ public class GameRunner : MonoBehaviour
         ResetGame();
         state = GameState.Playing;
         ui.ShowPauseButton();
+        sfx.SetMusic(true);
     }
 
     public void GoToMenu()
@@ -113,6 +119,7 @@ public class GameRunner : MonoBehaviour
         ResetGame();
         state = GameState.Menu;
         ui.ShowMenu();
+        sfx.SetMusic(true);
     }
 
     void SpawnMover()
@@ -266,6 +273,7 @@ public class GameRunner : MonoBehaviour
             PlayerPrefs.Save();
         }
         sfx.PlayOver();
+        sfx.SetMusic(false);
         ui.HidePauseButton();
         ui.ShowGameOver(score, best);
         ui.SetScore(score);
@@ -300,7 +308,8 @@ public class GameRunner : MonoBehaviour
         Vector3 dir = new Vector3(-0.55f, 1.05f, -0.55f).normalized;
         Vector3 wantPos = target + dir * CameraDistance;
         cam.transform.position = Vector3.SmoothDamp(cam.transform.position, wantPos, ref camVel, CameraSmoothTime);
-        cam.transform.rotation = Quaternion.LookRotation(target - cam.transform.position, Vector3.up);
+        float rotK = 1f - Mathf.Exp(-14f * Time.deltaTime);
+        cam.transform.rotation = Quaternion.Slerp(cam.transform.rotation, Quaternion.LookRotation(target - cam.transform.position, Vector3.up), rotK);
     }
 }
 
