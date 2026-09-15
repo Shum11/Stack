@@ -357,11 +357,17 @@ public class UIManager : MonoBehaviour
 
         onIcon = new GameObject("On");
         onIcon.transform.SetParent(go.transform, false);
+        var onImg = onIcon.AddComponent<Image>();
+        onImg.color = new Color(0f, 0f, 0f, 0f);
+        onImg.raycastTarget = false;
         Stretch(onIcon.GetComponent<RectTransform>());
         BuildNoteIcon(onIcon.transform);
 
         offIcon = new GameObject("Off");
         offIcon.transform.SetParent(go.transform, false);
+        var offImg = offIcon.AddComponent<Image>();
+        offImg.color = new Color(0f, 0f, 0f, 0f);
+        offImg.raycastTarget = false;
         Stretch(offIcon.GetComponent<RectTransform>());
         BuildNoteIcon(offIcon.transform);
         AddBar(offIcon.transform, Vector2.zero, new Vector2(4f, 40f), 45f, new Color(1f, 0.35f, 0.35f, 1f));
