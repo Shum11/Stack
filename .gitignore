@@ -1,0 +1,47 @@
+# Unity generated
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+[Ee]xports/
+[Uu]nityAnalyticsConfigFile/
+.utmp/
+.cache/
+gradle/
+!.gradle/
+
+# IDE
+.vs/
+.idea/
+.vscode/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+.opencode/
+
+# Packages (default from Unity templates)
+sysinfo.xml
+
+# Build artifacts
+*.apk
+*.aab
+*.apks
+*.unitypackage
+
+# OS
+.DS_Store
+Thumbs.db
