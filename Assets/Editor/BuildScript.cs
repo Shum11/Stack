@@ -29,6 +29,7 @@ public static class BuildScript
         PlayerSettings.Android.forceSDCardPermission = false;
 
         ConfigureSigning();
+        ConfigureIcons();
 
         PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[]
         {
@@ -86,6 +87,23 @@ public static class BuildScript
         PlayerSettings.Android.keystorePass = pass;
         PlayerSettings.Android.keyaliasName = "stack";
         PlayerSettings.Android.keyaliasPass = pass;
+    }
+
+    static void ConfigureIcons()
+    {
+        const string iconPath = "Assets/StackIcon/icon_512.png";
+        if (AssetDatabase.LoadAssetAtPath<Texture2D>(iconPath) == null)
+            AssetDatabase.ImportAsset(iconPath);
+        var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(iconPath);
+        if (tex == null)
+        {
+            UnityEngine.Debug.LogWarning("Launcher icon not found; using default.");
+            return;
+        }
+        var sizes = PlayerSettings.GetIconSizesForTargetGroup(BuildTargetGroup.Android);
+        var icons = new Texture2D[sizes.Length];
+        for (int i = 0; i < icons.Length; i++) icons[i] = tex;
+        PlayerSettings.SetIconsForTargetGroup(BuildTargetGroup.Android, icons);
     }
 
     static void CreateScene()
